@@ -1,0 +1,747 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Green Digital — คู่มือพร้อมฝึก</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,sans-serif;line-height:1.85;background:#f4f7f1;color:#243c2e}header{background:#183e2c;color:#fff;padding:44px max(24px,calc((100vw - 1080px)/2))}h1{font-size:2rem;line-height:1.4}header p{color:#d4e9cf}nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}nav a{color:#fff;text-decoration:none;border:1px solid #7b9e81;border-radius:9px;padding:8px 14px}main{max-width:1080px;margin:auto;padding:28px 20px}section{background:white;border-radius:16px;margin:24px 0;padding:32px;border:1px solid #dce6d6;overflow:auto;scroll-margin:20px}h2{margin-top:32px;border-bottom:1px solid #dce6d6;padding-bottom:10px;color:#176b46}table{border-collapse:collapse;width:100%;font-size:.94rem}td,th{border:1px solid #dce6d6;padding:10px;text-align:left}th{background:#edf4e8}pre{padding:18px;background:#172e22;color:#e7f2de;overflow:auto;border-radius:10px;line-height:1.6}code{font-family:monospace}p code,li code,td code{background:#eef3e9;padding:2px 5px;overflow-wrap:anywhere}img{max-width:100%;border-radius:12px}.intro{background:#dfecd7;padding:24px;border-radius:12px}a{color:#176b46}@media(max-width:600px){section{padding:18px}h1{font-size:1.6rem}main{padding:10px}}@media print{header nav{display:none}body{background:white}section{border:0;padding:0;break-before:page}pre{white-space:pre-wrap;color:#111;background:#eee}a{color:#111}}
+</style></head><body><header><div>คู่มือผู้สอนและนักเรียน ปวส.</div><h1>Green Digital • ธนาคารขยะ</h1><p>ฉบับพร้อมฝึกซ้อม 1.0 · PHP MVC + jQuery CRUD + Bootstrap 5</p><nav><a href="#install">ติดตั้งและเริ่มใช้งาน</a><a href="#training">ฝึก jQuery CRUD</a><a href="#database">ฐานข้อมูลและ ERD</a><a href="#competition">เกณฑ์และการสาธิต</a><a href="#tests">ผลทดสอบ</a></nav></header><main><div class="intro"><b>เริ่มใน XAMPP:</b> แตกโฟลเดอร์ → Import greendigital.sql → Import demo.sql → ตั้งค่า Config.php → เปิด http://localhost/greendigital/public/<br>บัญชีผู้ดูแล admin@example.test · รหัสผ่าน Green1234! (บัญชีสมมติสำหรับห้องฝึก)</div><p>เปิดเอกสารนี้ได้แบบออฟไลน์ ภาพ ERD ในหัวข้อฐานข้อมูลแสดงเป็น Mermaid source สำหรับนำไปวาดต่อ</p><img src="docs/dashboard.png" alt="ภาพหน้า Dashboard และรายงาน Green Digital"><section id="install"><h1>Green Digital — ชุดฝึกแข่งขัน ปวส.</h1>
+<p>ระบบธนาคารขยะ PHP 8 + PDO + jQuery 3.7.1 + Bootstrap 5.3.3 + DataTables 1.13.8 + Chart.js 4.4.8 ใช้ไฟล์ไลบรารีภายในชุด ไม่ต้องต่ออินเทอร์เน็ตขณะฝึก</p>
+<h2>ติดตั้งใน XAMPP (Windows)</h2>
+<ol>
+<li>แตก ZIP ให้ได้ <code>C:\xampp\htdocs\greendigital</code> โดยภายในมี <code>app</code>, <code>public</code>, <code>sql</code>, <code>storage</code></li>
+<li>เปิด Apache และ MySQL ใน XAMPP Control Panel</li>
+<li>เปิด phpMyAdmin แล้ว Import <code>sql/greendigital.sql</code> เพื่อสร้างฐานข้อมูลใหม่ชื่อ <code>greendigital</code></li>
+<li>Import <code>sql/demo.sql</code> <strong>ครั้งเดียว</strong> เพื่อใส่บัญชีและข้อมูลสมมติสำหรับฝึกซ้อม</li>
+<li>ตรวจ <code>app/core/Config.php</code>: host <code>127.0.0.1</code>, port <code>3306</code>, database <code>greendigital</code>, user <code>root</code>, password ว่าง ตรงกับ XAMPP ค่าเริ่มต้น หากเครื่องใช้ค่าอื่นให้แก้ไฟล์นี้</li>
+<li>เปิด <code>http://localhost/greendigital/public/</code> ไม่ใช่เปิดไฟล์ PHP ด้วยการดับเบิลคลิก</li>
+<li>ลองเข้าสู่ระบบ แล้วใช้เมนูบันทึกขยะ → เปิดรายการ → ตรวจรับ → ดูภาพรวม</li>
+</ol>
+<p>ใช้ PHP 8.0 ขึ้นไป พร้อม <code>pdo_mysql</code>, <code>mbstring</code>, <code>fileinfo</code>, <code>session</code> และให้เว็บเซิร์ฟเวอร์เขียนโฟลเดอร์ <code>storage</code> ได้ ภาพเก็บนอก <code>public</code> และเรียกดูผ่าน API ที่ตรวจสิทธิ์</p>
+<p><strong>ชุดนี้เป็นฐานข้อมูลรุ่นใหม่</strong> ชื่อตารางและเส้นทาง API เปลี่ยนจาก ZIP ต้นฉบับเพื่อใช้รูปแบบเดียวกันในการฝึก ไม่ใช่ patch สำหรับฐานข้อมูลเก่า ห้ามนำเข้า SQL ทับฐานข้อมูลที่มีข้อมูลจริง หากมีฐานข้อมูลชื่อเดียวกันให้สร้างชื่อใหม่ แล้วแก้ <code>CREATE DATABASE</code>, <code>USE</code> ในไฟล์ SQL ทั้งสองและค่า <code>database</code> ให้ตรงกัน</p>
+<h2>บัญชีฝึกซ้อม</h2>
+<table>
+<thead>
+<tr>
+<th>อีเมล</th>
+<th>บทบาท</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>admin@example.test</td>
+<td>ผู้ดูแล — จัดการสมาชิกและงานทั้งหมด</td>
+</tr>
+<tr>
+<td>staff@example.test</td>
+<td>เจ้าหน้าที่ — จัดการประเภท องค์กร เนื้อหา ตรวจรับ และตอบรายงาน</td>
+</tr>
+<tr>
+<td>student@example.test</td>
+<td>สมาชิก — ส่งขยะ ติดตามผล เป้าหมาย โปรไฟล์ และแจ้งปัญหา</td>
+</tr>
+</tbody>
+</table>
+<p>รหัสผ่านทุกบัญชี: <code>Green1234!</code> · รหัสกู้คืนบัญชีตัวอย่าง: <code>demo-recovery-2026</code></p>
+<p>บัญชีนี้ใช้สำหรับห้องฝึกเท่านั้น ก่อนใช้งานกับข้อมูลจริงให้เปลี่ยนรหัสผ่านและสร้างรหัสกู้คืนใหม่จากหน้าโปรไฟล์ ใช้ HTTPS บนเครื่องให้บริการจริง และตั้งค่าบัญชีฐานข้อมูลเฉพาะระบบ</p>
+<h2>วิธีใช้งานตามบทบาท</h2>
+<ul>
+<li><strong>สมาชิก:</strong> เพิ่มรายการส่งขยะ เลือกองค์กร/ประเภท น้ำหนักเป็นกิโลกรัม แนบภาพได้ แก้ไขหรือลบรายการของตนก่อนตรวจรับ ติดตามผลและคะแนนในภาพรวม ตั้งเป้าหมายรายเดือน</li>
+<li><strong>เจ้าหน้าที่:</strong> เปิดรายการ ตรวจสอบข้อมูลแล้วเลือก รอตรวจ / ตรวจรับแล้ว / ไม่ผ่าน พร้อมเหตุผล หากต้องแก้รายการตรวจรับแล้วให้คืนสถานะรอตรวจก่อน</li>
+<li><strong>ผู้ดูแล:</strong> เพิ่ม/แก้ไขสมาชิก ระงับหรือคืนสิทธิ์ บัญชีที่ถูกระงับใช้ session เดิมต่อไม่ได้ ไม่อนุญาตให้ลดสิทธิ์หรือระงับบัญชีตนเอง</li>
+<li><strong>เนื้อหา:</strong> เพิ่ม แก้ไข ลบ ค้นหา แนบภาพ และกำหนดวันเปิด–ปิด ช่องเวลาว่างคือไม่จำกัดด้านนั้น เจ้าหน้าที่เห็นทุกบทความ สมาชิกเห็นเฉพาะช่วงที่เผยแพร่</li>
+<li><strong>แจ้งปัญหา:</strong> สมาชิกส่งข้อความและอ่านคำตอบของตน เจ้าหน้าที่อ่านและตอบกลับ รายงานที่ยังไม่อ่านแสดงในภาพรวม</li>
+<li><strong>รายงาน:</strong> ตารางค้นหา/เรียงลำดับ/แบ่งหน้าและส่งออก CSV ตามผลค้นหา ภาพรวมกรองช่วงวัน องค์กร ประเภท และคำค้น พร้อมกราฟประเภท/รายเดือน ปุ่มส่งออกในภาพรวมส่งเฉพาะรายการตรวจรับซึ่งตรงกับยอดรวม</li>
+</ul>
+<p>คะแนน = ปัดลง (น้ำหนักตรวจรับในเดือนปัจจุบัน × 10) มูลค่า = น้ำหนัก × ราคาประเมินที่บันทึกไว้กับรายการ การเปลี่ยนราคาประเภทภายหลังไม่เปลี่ยนยอดเดิม คะแนนไม่ใช่เงินและไม่มีระบบชำระเงินจริง</p>
+<p>ยอดน้ำหนักหมายถึงขยะที่เจ้าหน้าที่ตรวจรับเพื่อรีไซเคิล ไม่ใช่การวัดคาร์บอนหรือการยืนยันว่าขยะผ่านกระบวนการรีไซเคิลปลายทางแล้ว</p>
+<h2>ลืมรหัสผ่าน</h2>
+<p>ตอนสมัคร ระบบแสดงรหัสกู้คืนหนึ่งครั้ง ให้ผู้ใช้จดเก็บไว้ หน้า “ลืมรหัสผ่าน” รับอีเมลและรหัสกู้คืน ยืนยันสำเร็จจึงตั้งรหัสใหม่ได้ภายใน 5 นาที สิทธิ์ใช้ได้ครั้งเดียวและระบบออกรหัสกู้คืนชุดใหม่ ไม่ต้องพึ่งอีเมลหรืออินเทอร์เน็ต</p>
+<p>บัญชีที่ผู้ดูแลสร้างให้ ให้เข้าสู่ระบบครั้งแรกด้วยรหัสเริ่มต้น แล้วไปโปรไฟล์เพื่อสร้างรหัสกู้คืน ระบบไม่ใช้คำตอบความปลอดภัยแบบข้อความธรรมดา หากไม่มีทั้งรหัสผ่านและรหัสกู้คืน ผู้สอนต้องจัดการบัญชีผ่านฐานข้อมูลในสภาพแวดล้อมฝึก</p>
+<h2>ทดลองด้วย SQLite (ทางเลือก ไม่ใช้แทนการซ้อม XAMPP)</h2>
+<p>macOS/Linux ที่มี PHP และ pdo_sqlite:</p>
+<pre><code class="language-sh">GD_DRIVER=sqlite php setup.php
+GD_DRIVER=sqlite php -S 127.0.0.1:8000 -t public
+</code></pre>
+<p>Windows Command Prompt:</p>
+<pre><code class="language-bat">set GD_DRIVER=sqlite
+C:\xampp\php\php.exe setup.php
+C:\xampp\php\php.exe -S 127.0.0.1:8000 -t public
+</code></pre>
+<p>เปิด <code>http://127.0.0.1:8000/</code> ตัวติดตั้งสร้างเฉพาะฐานข้อมูลใหม่พร้อมบัญชีตัวอย่างและบทความหนึ่งรายการ ไม่ลบฐานข้อมูลที่มีอยู่ การจำลองการแข่งขันให้ใช้ MariaDB/MySQL ตามขั้นตอน XAMPP ด้านบน</p>
+<h2>โครงสร้างสำหรับการสอน</h2>
+<pre><code class="language-text">public/index.php             รับคำขอและส่งต่อ
+app/core/Config.php          ตั้งค่าฐานข้อมูล
+app/core/bootstrap.php       session, CSRF, validation, สิทธิ์
+app/controllers/ApiController.php  ตรวจข้อมูลและจัดการแต่ละงาน
+app/models/Store.php         PDO และ SQL
+app/views/layout.php        โครงหน้า Bootstrap 5
+public/assets/js/app.js     jQuery CRUD, ฟอร์ม, ตาราง, กราฟ
+public/assets/vendor/       ไลบรารีพร้อมใช้แบบออฟไลน์
+sql/greendigital.sql         schema MySQL/MariaDB
+sql/demo.sql                 ข้อมูลสมมติ
+setup.php                    ติดตั้งบัญชีผ่าน CLI / สร้าง SQLite
+storage/                     ภาพที่อัปโหลด (ไม่อยู่ใน public)
+tests/integration.py         ทดสอบ HTTP ด้วย Python มาตรฐาน
+</code></pre>
+<p>อ่านต่อ: <code>docs/คู่มือฝึก-jquery.md</code>, <code>docs/เกณฑ์และการสาธิต.md</code>, <code>docs/ฐานข้อมูล.md</code>, <code>docs/ผลทดสอบ.md</code></p>
+<h2>ปัญหาที่พบบ่อย</h2>
+<table>
+<thead>
+<tr>
+<th>อาการ</th>
+<th>วิธีตรวจ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>เชื่อมต่อฐานข้อมูลไม่ได้</td>
+<td>เปิด MySQL ตรวจชื่อฐานข้อมูล พอร์ต และ Config.php</td>
+</tr>
+<tr>
+<td>Could not find driver</td>
+<td>เปิด pdo_mysql ใน php.ini และ restart Apache</td>
+</tr>
+<tr>
+<td>ภาพอัปโหลดไม่สำเร็จ</td>
+<td>storage ต้องเขียนได้; ตั้ง upload_max_filesize ≥ 3M และ post_max_size ≥ 4M</td>
+</tr>
+<tr>
+<td>ลบประเภทหรือองค์กรไม่ได้</td>
+<td>มีรายการขยะอ้างอิงอยู่ ให้คงข้อมูลไว้หรือจัดการรายการที่เกี่ยวข้องก่อน</td>
+</tr>
+<tr>
+<td>กดบันทึกแล้วแจ้งโหลดหน้าใหม่</td>
+<td>CSRF/session หมดอายุ ให้โหลดหน้าและเข้าสู่ระบบใหม่</td>
+</tr>
+<tr>
+<td>เข้าสู่ระบบหลายครั้งไม่สำเร็จ</td>
+<td>ตรวจบัญชี/สถานะ ระบบจำกัดความพยายามผิด 8 ครั้งต่อ 15 นาที</td>
+</tr>
+<tr>
+<td>หน้าเว็บไม่มีรูปแบบ</td>
+<td>ต้องเปิด URL ใต้ public และต้องคัดลอก assets/vendor ไปครบ</td>
+</tr>
+<tr>
+<td>กราฟไม่มีข้อมูล</td>
+<td>ต้องมีรายการที่ตรวจรับแล้ว และอยู่ในช่วงตัวกรอง</td>
+</tr>
+<tr>
+<td>Import demo ซ้ำเกิด duplicate</td>
+<td>ข้อมูลสาธิตมีแล้ว ไม่ต้อง Import ซ้ำ</td>
+</tr>
+</tbody>
+</table>
+<h2>การนำขึ้นเครื่องแข่งขัน</h2>
+<p>คัดลอกไฟล์ทั้งหมด ติดตั้งฐานข้อมูลและกำหนดค่าบนเครื่องปลายทาง ทดสอบ URL จริงจากเครื่องอื่น ตั้ง document root ไป <code>public</code> หากผู้จัดอนุญาต หรือใช้เส้นทาง <code>/greendigital/public/</code> บน Apache ที่อ่าน <code>.htaccess</code> ได้ ตรวจว่า URL <code>/greendigital/storage/</code> และ <code>/greendigital/app/</code> ถูกปฏิเสธ หากใช้ Nginx ต้องกำหนด root เป็น <code>public</code> เพราะ Nginx ไม่อ่าน <code>.htaccess</code></p>
+<p>การขึ้นเครื่องแม่ข่ายสนามแข่งขันยังต้องทดสอบกับค่าที่ผู้จัดให้จริง ชุดนี้ไม่ได้เผยแพร่ไปยังเซิร์ฟเวอร์สาธารณะ</p></section><section id="training"><h1>คู่มือฝึก jQuery CRUD — จากหนึ่งตารางสู่ทั้งระบบ</h1>
+<p>เป้าหมาย: นักเรียนเขียนโครงเดิมจากความเข้าใจ แล้วเปลี่ยนชื่อฟิลด์/กฎธุรกิจตามโจทย์ได้ ไม่จำโค้ดทุกบรรทัดรวดเดียว</p>
+<h2>แผนที่การทำงาน</h2>
+<pre><code class="language-text">View → jQuery → public/index.php → ApiController → Store → ฐานข้อมูล
+     ← JSON / ข้อมูลตาราง ←
+</code></pre>
+<p>ชุดนี้ใช้รูปแบบ URL เดียวกันทุกตาราง:</p>
+<table>
+<thead>
+<tr>
+<th>งาน</th>
+<th>Method</th>
+<th>URL</th>
+<th>ข้อมูลหลัก</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>อ่านหลายรายการ</td>
+<td>GET</td>
+<td>?r=/api/list</td>
+<td>kind=types</td>
+</tr>
+<tr>
+<td>อ่านหนึ่งรายการ</td>
+<td>GET</td>
+<td>?r=/api/detail</td>
+<td>kind=types, id</td>
+</tr>
+<tr>
+<td>เพิ่ม/แก้ไข</td>
+<td>POST</td>
+<td>?r=/api/save</td>
+<td>kind=types, id, name, price, _csrf</td>
+</tr>
+<tr>
+<td>ลบ</td>
+<td>POST</td>
+<td>?r=/api/delete</td>
+<td>kind=types, id, _csrf</td>
+</tr>
+</tbody>
+</table>
+<p><code>kind</code> คือชื่องานที่อยู่ในรายการอนุญาตเท่านั้น PHP ตรวจสิทธิ์ซ้ำทุกครั้ง</p>
+<h2>บทที่ 1: ประเภทขยะ</h2>
+<p>จำสามฟิลด์: <code>id</code>, <code>name</code>, <code>price</code> หน่วยน้ำหนักทุกประเภทเป็น kg</p>
+<ol>
+<li>เปิด <code>Store::save()</code> ดู INSERT และ UPDATE ใช้ PDO prepare/execute</li>
+<li>เปิด <code>ApiController::save()</code> ดู <code>case 'types'</code> และ <code>requireStaff()</code></li>
+<li>เปิด <code>app.js</code> ดู <code>listing()</code> → <code>openEditor()</code> → submit ของ <code>#editForm</code></li>
+<li>ทดลองเพิ่ม แก้ชื่อ แก้ราคา ลบ และเพิ่มชื่อซ้ำเพื่ออ่านข้อความผิดพลาด</li>
+</ol>
+<h2>สูตรฝั่งหน้าจอ</h2>
+<p><strong>อ่าน → เปิด → เติม → ส่ง → ตรวจ → โหลดใหม่</strong></p>
+<p>โค้ดย่อประกอบการเรียน (ใช้ endpoint ของชุดจริง แต่ต้องสร้าง HTML ให้มี ID ตรงกับตัวอย่าง):</p>
+<pre><code class="language-javascript">// &lt;form id=&quot;typeForm&quot;&gt; ต้องมี name: id, name, price
+// ตาราง #typeTable ต้องมีหัวตาราง 4 ช่อง
+const token = $('meta[name=&quot;csrf-token&quot;]').attr('content');
+const table = $('#typeTable').DataTable({
+  ajax: { url: '?r=/api/list&amp;kind=types', dataSrc: 'data' },
+  columns: [
+    { data: 'id' },
+    { data: 'name', render: $.fn.dataTable.render.text() },
+    { data: 'price', render: $.fn.dataTable.render.text() },
+    { data: null, defaultContent: '&lt;button type=&quot;button&quot; class=&quot;edit&quot;&gt;แก้ไข&lt;/button&gt;' }
+  ]
+});
+
+$('#addType').on('click', function () {
+  $('#typeForm')[0].reset();
+  $('#typeForm [name=id]').val(0);
+});
+
+$('#typeTable').on('click', '.edit', function () {
+  const row = table.row($(this).closest('tr')).data();
+  $.getJSON('?r=/api/detail', { kind: 'types', id: row.id })
+    .done(function (data) {
+      $('#typeForm [name=id]').val(data.id);
+      $('#typeForm [name=name]').val(data.name);
+      $('#typeForm [name=price]').val(data.price);
+    })
+    .fail(function (xhr) { alert(xhr.responseJSON?.message || 'โหลดไม่สำเร็จ'); });
+});
+
+$('#typeForm').on('submit', function (event) {
+  event.preventDefault();
+  const data = new FormData(this);
+  data.set('kind', 'types');
+  data.set('_csrf', token);
+  $.ajax({
+    url: '?r=/api/save', method: 'POST', data,
+    dataType: 'json', processData: false, contentType: false
+  })
+  .done(function (res) {
+    if (!res.success) { alert(res.message); return; }
+    table.ajax.reload(null, false);
+  })
+  .fail(function (xhr) { alert(xhr.responseJSON?.message || 'บันทึกไม่สำเร็จ'); });
+});
+</code></pre>
+<p>ระบบจริงมี <code>post()</code> รวมโค้ดส่ง AJAX และ CSRF ให้ทุกฟอร์มใช้ร่วมกัน ฟังก์ชันนี้คืน Promise จึงใช้ <code>await</code> กับ <code>try/catch</code> เพื่อเรียงขั้นตอนอ่านง่าย หลักเดียวกับ <code>.done()</code> / <code>.fail()</code> ในตัวอย่าง ครูเลือกเริ่มจากแบบใดแบบหนึ่งแล้วให้นักเรียนแปลงเทียบกัน</p>
+<p>ตัวอย่างลบ:</p>
+<pre><code class="language-javascript">if (confirm('ยืนยันการลบ?')) {
+  $.post('?r=/api/delete', {kind:'types', id:id, _csrf:token})
+    .done(function(res) { if(res.success) table.ajax.reload(null,false); })
+    .fail(function(xhr) { alert(xhr.responseJSON?.message || 'ลบไม่สำเร็จ'); });
+}
+</code></pre>
+<h2>คำสำคัญที่ต้องอธิบายได้</h2>
+<table>
+<thead>
+<tr>
+<th>คำ</th>
+<th>ความหมาย</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$(function(){ ... })</code></td>
+<td>รอ DOM พร้อม</td>
+</tr>
+<tr>
+<td><code>.on('click', '.edit', ...)</code></td>
+<td>รับคลิกปุ่มที่สร้างภายหลัง</td>
+</tr>
+<tr>
+<td><code>.val()</code></td>
+<td>อ่าน/เติม input</td>
+</tr>
+<tr>
+<td><code>.text()</code> / <code>esc()</code></td>
+<td>แสดงข้อความผู้ใช้โดยไม่แปลเป็น HTML</td>
+</tr>
+<tr>
+<td><code>preventDefault()</code></td>
+<td>ยกเลิก submit ปกติ</td>
+</tr>
+<tr>
+<td><code>FormData</code></td>
+<td>รวมข้อมูลและไฟล์; field ต้องมี name</td>
+</tr>
+<tr>
+<td><code>processData:false</code></td>
+<td>ไม่ให้ jQuery แปลง FormData</td>
+</tr>
+<tr>
+<td><code>contentType:false</code></td>
+<td>ให้เบราว์เซอร์สร้าง multipart boundary</td>
+</tr>
+<tr>
+<td><code>dataType:'json'</code></td>
+<td>คาดว่าคำตอบเป็น JSON</td>
+</tr>
+<tr>
+<td><code>ajax.reload(null,false)</code></td>
+<td>โหลดข้อมูลใหม่และคงหน้าตาราง</td>
+</tr>
+<tr>
+<td><code>try/catch</code></td>
+<td>รับผลสำเร็จ/ผิดพลาดเมื่อใช้ await</td>
+</tr>
+</tbody>
+</table>
+<h2>สูตรฝั่ง PHP</h2>
+<p><strong>สิทธิ์ → CSRF → ข้อมูล → SQL → JSON</strong></p>
+<ul>
+<li>ตรวจ session และสถานะสมาชิกในทุก API ที่ต้องล็อกอิน</li>
+<li>ปุ่มซ่อนบนจอไม่ใช่การป้องกันสิทธิ์</li>
+<li><code>kind</code> ตรวจ whitelist ก่อนใช้เป็นชื่อตาราง</li>
+<li>ข้อมูลผู้ใช้ส่งผ่าน <code>?</code> placeholders ไม่ต่อเข้า SQL</li>
+<li><code>id=0</code> เพิ่ม, <code>id&gt;0</code> แก้ไข; ต้องตรวจว่ารายการมีอยู่จริง</li>
+<li>รายการขยะตรวจเจ้าของ และห้ามแก้หลังตรวจรับ</li>
+<li>ผู้ใช้ส่ง <code>user_id</code> หรือ <code>status=approved</code> มาเองก็ไม่มีผล เพราะ PHP กำหนดค่า</li>
+<li>ส่ง JSON พร้อม HTTP status: 401 ยังไม่ล็อกอิน, 403 ไม่มีสิทธิ์, 404 ไม่พบ, 409 ข้อมูลซ้ำ/ถูกอ้างอิง, 419 CSRF, 422 ข้อมูลผิด, 429 ลองถี่เกินไป</li>
+</ul>
+<h2>แปลงหนึ่งชุดเป็นหลายงาน</h2>
+<table>
+<thead>
+<tr>
+<th>kind</th>
+<th>ฟิลด์เพิ่มจาก id</th>
+<th>กฎสำคัญ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>types</td>
+<td>name, price</td>
+<td>เจ้าหน้าที่; ราคาไม่ติดลบ</td>
+</tr>
+<tr>
+<td>organizations</td>
+<td>name</td>
+<td>เจ้าหน้าที่; ชื่อไม่ซ้ำ</td>
+</tr>
+<tr>
+<td>users</td>
+<td>email, full_name, role, active, password ตอนเพิ่ม</td>
+<td>เฉพาะ admin; ป้องกันระงับตนเอง</td>
+</tr>
+<tr>
+<td>contents</td>
+<td>title, body, image, publish_at, expire_at, active</td>
+<td>เวลาเปิดก่อนปิด; สมาชิกเห็นเฉพาะเผยแพร่</td>
+</tr>
+<tr>
+<td>records</td>
+<td>org_id, type_id, weight, record_date, note, image</td>
+<td>เจ้าของ; น้ำหนัก &gt;0; วันที่ไม่เป็นอนาคต</td>
+</tr>
+<tr>
+<td>reports</td>
+<td>message</td>
+<td>สมาชิกเพิ่ม; เจ้าหน้าที่ตอบด้วย /api/reply</td>
+</tr>
+</tbody>
+</table>
+<p>ใช้ <code>FormData</code> เหมือนกันทุกฟอร์ม จึงเพิ่มภาพได้โดยไม่เปลี่ยนสูตร AJAX</p>
+<h2>ตารางฝึก 8 รอบ</h2>
+<table>
+<thead>
+<tr>
+<th>รอบ</th>
+<th>งาน</th>
+<th>เกณฑ์ผ่าน</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>วาด ERD และสร้างตาราง</td>
+<td>PK/FK ถูกต้อง ทดลองข้อมูลผิด</td>
+</tr>
+<tr>
+<td>2</td>
+<td>CRUD types</td>
+<td>เขียนจากหน้าเปล่าได้</td>
+</tr>
+<tr>
+<td>3</td>
+<td>organizations</td>
+<td>เปลี่ยนตารางโดยใช้รูปแบบเดิม</td>
+</tr>
+<tr>
+<td>4</td>
+<td>login / session / roles</td>
+<td>ลองเรียก URL โดยตรงแล้วถูกปฏิเสธ</td>
+</tr>
+<tr>
+<td>5</td>
+<td>users / contents</td>
+<td>ระงับบัญชีและตั้งเวลาแสดงได้</td>
+</tr>
+<tr>
+<td>6</td>
+<td>records + ภาพ + review</td>
+<td>เจ้าของแก้ได้ก่อนตรวจรับเท่านั้น</td>
+</tr>
+<tr>
+<td>7</td>
+<td>filters / chart / CSV / goals</td>
+<td>คำนวณยอดด้วยมือเทียบระบบ</td>
+</tr>
+<tr>
+<td>8</td>
+<td>จับเวลา 8 ชั่วโมง</td>
+<td>ติดตั้งเครื่องอื่นและสาธิตครบ</td>
+</tr>
+</tbody>
+</table>
+<p>แต่ละรอบ: ดูตัวอย่าง → เขียนตาม → ปิดต้นฉบับเขียนใหม่ → เปลี่ยนโจทย์ → อธิบายให้เพื่อนฟัง</p>
+<h2>แบบทดสอบที่ครูใช้ถาม</h2>
+<ol>
+<li>ทำไมข้อมูลจาก <code>.val()</code> ต้องตรวจใน PHP อีกครั้ง?</li>
+<li>ทำไมราคาประเมินเก็บใน records ทั้งที่ types มีราคาแล้ว?</li>
+<li>ถ้าเปลี่ยน id ในคำขอเป็นของเพื่อน ระบบป้องกันตรงไหน?</li>
+<li>ถ้าลบประเภทที่มีรายการอ้างอิง ควรเกิดอะไร?</li>
+<li>ทำไมยอดรายงานไม่รวม pending และ rejected?</li>
+<li>เหตุใดต้อง encode ข้อความทั้งในตารางและใน value ของ input?</li>
+<li>หากส่งฟอร์มแล้วเครือข่ายขาด จะตรวจได้อย่างไรว่าบันทึกแล้ว?</li>
+<li>CSV ที่ตรงกับตัวกรองต้องใช้ชุดข้อมูลใด?</li>
+</ol>
+<h2>แบ่งทีม 3 คน / คอมพิวเตอร์ 2 เครื่อง</h2>
+<p>คนที่ 1 ฐานข้อมูลและ PHP, คนที่ 2 หน้าจอและ jQuery, คนที่ 3 ทดสอบข้อมูลและเกณฑ์/เตรียมนำเสนอ แล้วสลับใช้เครื่องเป็นช่วง ทุกคนต้องอธิบายเส้นทางข้อมูลหนึ่งรายการได้ครบ ไม่ให้คนใดรู้เฉพาะไฟล์ของตน</p></section><section id="database"><h1>ฐานข้อมูลและความสัมพันธ์</h1>
+<p>ฐานข้อมูลใหม่ <code>greendigital</code> ใช้ UTF-8 (utf8mb4), InnoDB และ Foreign Key น้ำหนักเก็บ DECIMAL(12,3) ราคา DECIMAL(10,2) เพื่อกำหนดความละเอียดชัดเจน คำนวณยอดรายงานจากรายการตรวจรับเท่านั้น</p>
+<pre><code class="language-mermaid">erDiagram
+    users ||--o{ records : sends
+    users o|--o{ records : reviews
+    organizations ||--o{ records : receives
+    types ||--o{ records : classifies
+    users ||--o{ reports : reports
+    users ||--o{ goals : sets
+    users {
+      int id PK
+      varchar email UK
+      varchar password
+      varchar full_name
+      varchar role
+      int active
+      varchar recovery_hash
+      int session_version
+      datetime created_at
+    }
+    organizations {
+      int id PK
+      varchar name UK
+    }
+    types {
+      int id PK
+      varchar name UK
+      decimal price
+    }
+    records {
+      int id PK
+      int user_id FK
+      int org_id FK
+      int type_id FK
+      decimal weight
+      decimal price
+      date record_date
+      text note
+      varchar image
+      varchar status
+      varchar review_note
+      int reviewer_id FK
+      datetime created_at
+    }
+    reports {
+      int id PK
+      int user_id FK
+      text message
+      int is_read
+      text reply
+      datetime created_at
+    }
+    goals {
+      int id PK
+      int user_id FK
+      varchar month
+      decimal target
+    }
+    contents {
+      int id PK
+      varchar title
+      text body
+      varchar image
+      datetime publish_at
+      datetime expire_at
+      int active
+      datetime created_at
+    }
+    attempts {
+      int id PK
+      varchar bucket
+      int attempted_at
+    }
+</code></pre>
+<p><code>contents</code> เป็นบทความส่วนกลาง ไม่ผูกเจ้าของรายบุคคล ส่วน <code>attempts</code> เป็นตัวนับความพยายามยืนยันตัวตน แยกออกจากข้อมูลธุรกิจ</p>
+<table>
+<thead>
+<tr>
+<th>ตาราง</th>
+<th>รายละเอียดสำคัญ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>users</td>
+<td>email ไม่ซ้ำ, password และ recovery_hash เก็บ hash, role = admin/staff/member, active 1/0, session_version ใช้ยกเลิก session เก่า</td>
+</tr>
+<tr>
+<td>organizations</td>
+<td>ชื่อองค์กรไม่ซ้ำ ลบไม่ได้ถ้ามี records อ้างอิง</td>
+</tr>
+<tr>
+<td>types</td>
+<td>ชื่อประเภทไม่ซ้ำ ราคาต่อกิโลกรัมไม่ติดลบ</td>
+</tr>
+<tr>
+<td>records</td>
+<td>เจ้าของ องค์กร ประเภทต้องมีจริง; reviewer_id ว่างได้ก่อนตรวจ; pending/approved/rejected; ราคาเก็บเป็น snapshot</td>
+</tr>
+<tr>
+<td>contents</td>
+<td>publish_at/expire_at ว่างได้; เวลาเปิดรวมขอบเขต เวลา expire ไม่นับรวม</td>
+</tr>
+<tr>
+<td>reports</td>
+<td>ผู้แจ้งต้องมีจริง; is_read เปลี่ยนเมื่อเจ้าหน้าที่ตอบ; เก็บข้อความเดิมไว้</td>
+</tr>
+<tr>
+<td>goals</td>
+<td>unique(user_id,month) ทำให้หนึ่งคนมีเป้าหมายได้หนึ่งค่าต่อเดือน</td>
+</tr>
+<tr>
+<td>attempts</td>
+<td>bucket เป็น SHA-256 ของประเภทงานกับตัวระบุ; เก็บเฉพาะช่วง 15 นาทีล่าสุดเมื่อมีการตรวจ</td>
+</tr>
+</tbody>
+</table>
+<p>ไฟล์ SQL เป็นแหล่งอ้างอิงชื่อฟิลด์และชนิดข้อมูลที่แน่นอน Diagram แสดงเฉพาะฟิลด์หลักของ users; phone/address อยู่ใน SQL ด้วย</p>
+<h2>กฎข้อมูลที่ต้องรักษา</h2>
+<ul>
+<li>ผู้ใช้ทั่วไปอ่านหรือแก้ records/reports ของผู้อื่นไม่ได้ แม้เปลี่ยน ID เอง</li>
+<li>สมาชิกส่งสถานะอนุมัติหรือ user_id มาก็ไม่มีผล ค่าเหล่านี้กำหนดที่ PHP</li>
+<li>รายการ approved แก้หรือลบไม่ได้จนเจ้าหน้าที่คืนสถานะ pending</li>
+<li>ทุกน้ำหนักใช้กิโลกรัม ไม่มีการรวมหน่วยชิ้นกับกิโลกรัม</li>
+<li>ภาพเก็บชื่อสุ่มใน storage; API ตรวจเจ้าของหรือสิทธิ์แสดงเนื้อหาก่อนส่งภาพ</li>
+<li>ไม่ลบสมาชิก เพราะข้อมูลประวัติอ้างอิงอยู่ ใช้การระงับแทน</li>
+<li>การแก้ราคาประเภทไม่ย้อนเปลี่ยนราคาของ records เดิม; การแก้รายการที่ยังไม่ตรวจรับจะบันทึกราคาปัจจุบัน</li>
+</ul>
+<h2>ตัวอย่างคำนวณด้วยมือ</h2>
+<p>ขวดพลาสติก 12.5 กก. × 8 บาท = 100 บาท
+กระดาษ 20 กก. × 4 บาท = 80 บาท
+ถ้าทั้งสองรายการตรวจรับแล้ว ยอด = 32.5 กก. / 180 บาท
+ถ้ารายการกระดาษยัง pending ยอด = 12.5 กก. / 100 บาท</p>
+<p>คะแนนเดือนปัจจุบันของสมาชิก = floor(น้ำหนัก approved ในเดือน × 10)
+ความสำเร็จเป้าหมาย = min(100, น้ำหนัก approved ในเดือน / เป้าหมาย × 100)</p>
+<p>ไม่มีตารางธุรกรรมจ่ายเงินหรือค่าคำนวณ CO₂ เพราะไม่ได้ดำเนินการชำระเงินจริงและไม่ได้กำหนดปัจจัยการปล่อยคาร์บอน</p></section><section id="competition"><h1>แผนตรวจงานและสาธิตการแข่งขัน</h1>
+<p>อ้างอิงเอกสาร “เกณฑ์การแข่งขัน.pdf” ที่ผู้สอนส่งมา: ทักษะการพัฒนานวัตกรรมเทคโนโลยีธุรกิจดิจิทัล ปวส. ปีการศึกษา 2568–2572 หน้า 2–11 รายละเอียดวันแข่งขันให้ตรวจประกาศเจ้าภาพเพิ่มเติม</p>
+<h2>ตารางเชื่อมเกณฑ์กับระบบ</h2>
+<table>
+<thead>
+<tr>
+<th>เกณฑ์</th>
+<th style="text-align: right;">คะแนน</th>
+<th>จุดสาธิต / งานที่ทีมต้องเตรียม</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Design Thinking</td>
+<td style="text-align: right;">10</td>
+<td>สัมภาษณ์ผู้ใช้จริง นิยามปัญหา เสนอแนวคิด วาดต้นแบบ และบันทึกผลทดสอบ</td>
+</tr>
+<tr>
+<td>Business Model Canvas</td>
+<td style="text-align: right;">10</td>
+<td>เตรียม 9 ช่องตามบริบทวิทยาลัยและพันธมิตรรับซื้อ</td>
+</tr>
+<tr>
+<td>ฐานข้อมูล</td>
+<td style="text-align: right;">10</td>
+<td>SQL, PK/FK, unique, DECIMAL, ERD ในฐานข้อมูล.md</td>
+</tr>
+<tr>
+<td>Authentication &amp; Security</td>
+<td style="text-align: right;">8</td>
+<td>Login/Logout, session, password hash, role และทดสอบ URL ที่ไม่มีสิทธิ์</td>
+</tr>
+<tr>
+<td>สมาชิก</td>
+<td style="text-align: right;">8</td>
+<td>สมัคร, ตรวจข้อมูล, โปรไฟล์, เปลี่ยนรหัส, กู้คืนด้วย recovery code</td>
+</tr>
+<tr>
+<td>ผู้ดูแลระบบ</td>
+<td style="text-align: right;">9</td>
+<td>จัดการ/ระงับสมาชิก, ตั้งเวลาเนื้อหา, แจ้งเตือน, dashboard</td>
+</tr>
+<tr>
+<td>Green Digital Application</td>
+<td style="text-align: right;">15</td>
+<td>ส่งขยะ, ตรวจรับ, ติดตามผล, เป้าหมาย; เจ้าหน้าที่จัดการประเภท/องค์กร; หน้าจอย่อขยาย</td>
+</tr>
+<tr>
+<td>รายงาน</td>
+<td style="text-align: right;">10</td>
+<td>สมาชิก/เนื้อหา/ขยะ; CSV; กราฟประเภทและรายเดือน; กรองวัน/องค์กร/ประเภท/คำค้น</td>
+</tr>
+<tr>
+<td>ประสิทธิภาพและคุณค่า</td>
+<td style="text-align: right;">10</td>
+<td>วัดน้ำหนักที่ตรวจรับได้, UX, เป้าหมาย/คะแนนและการมีส่วนร่วม; ทีมต้องอธิบายคุณค่าจากข้อมูลจริง</td>
+</tr>
+<tr>
+<td>นำเสนอ</td>
+<td style="text-align: right;">10</td>
+<td>แนะนำตัวไทย/ภาษาต่างประเทศ อธิบายแนวคิด ธุรกิจ สาธิต ตอบคำถาม บริหารเวลา</td>
+</tr>
+</tbody>
+</table>
+<p>ตารางนี้เป็นแผนเตรียมหลักฐาน ไม่ใช่การรับรองคะแนน ฟังก์ชันเชิงสิ่งแวดล้อมระดับชาติต้องแสดงอย่างน้อย 2 ฟังก์ชันทั้งฝั่งผู้ใช้และผู้ดูแลตามข้อกำหนด พร้อมอย่างน้อย 2 ฟังก์ชันอำนวยความสะดวก/กรองค้นหาตามรายละเอียดเอกสาร</p>
+<h2>รายการตรวจแบบลงมือทำ</h2>
+<ul>
+<li>[ ] สมัครสมาชิก อีเมลผิด/ซ้ำ/รหัสสั้น ต้องถูกปฏิเสธ</li>
+<li>[ ] จดรหัสกู้คืน ทดลองกู้บัญชี และยืนยันว่ารหัสกู้คืนเดิมใช้ซ้ำไม่ได้</li>
+<li>[ ] เปลี่ยนโปรไฟล์ โหลดหน้าใหม่ ค่าต้องยังอยู่</li>
+<li>[ ] เข้าด้วย member แล้วเรียก users API ตรง ๆ ต้องได้ 403</li>
+<li>[ ] แก้หรือลบ ID รายการของเพื่อน ต้องได้ 403</li>
+<li>[ ] ระงับสมาชิกที่ล็อกอินอยู่ สมาชิกต้องเรียกข้อมูลต่อไม่ได้</li>
+<li>[ ] สร้างประเภท/องค์กร เพิ่ม แก้ ลบ และค้นหา</li>
+<li>[ ] ลบประเภทที่ records ใช้อ้างอิง ต้องแจ้งข้อขัดแย้ง</li>
+<li>[ ] ส่งขยะพร้อมภาพ แก้โดยไม่เลือกภาพใหม่ ภาพเดิมต้องอยู่</li>
+<li>[ ] น้ำหนักศูนย์/ลบ, วันที่อนาคต, ไฟล์ PHP หรือเกิน 3 MB ต้องไม่ผ่าน</li>
+<li>[ ] ก่อนตรวจรับยอดไม่เพิ่ม หลังตรวจรับยอดเพิ่มตามน้ำหนักจริง</li>
+<li>[ ] approved ต้องแก้หรือลบไม่ได้ คืน pending แล้วจึงแก้ได้</li>
+<li>[ ] เปลี่ยนราคาประเภทแล้วมูลค่ารายการเดิมต้องไม่เปลี่ยน</li>
+<li>[ ] ตั้งบทความอนาคต/หมดอายุ/ซ่อน สมาชิกต้องไม่เห็น</li>
+<li>[ ] แจ้งปัญหา → ผู้ดูแลเห็นแจ้งเตือน → ตอบ → สมาชิกเห็นคำตอบ</li>
+<li>[ ] ตั้งเป้าหมายรายเดือน ตรวจคะแนนกับน้ำหนักด้วยมือ</li>
+<li>[ ] กรองช่วงวัน/องค์กร/ประเภท แล้ว CSV ต้องตรงกับข้อมูลที่เลือก</li>
+<li>[ ] ค้นหาในตารางแล้วส่งออก ต้องส่งเฉพาะรายการที่ค้นพบ</li>
+<li>[ ] ย่อหน้าจอ 390px เมนูเปิดได้ ฟอร์มไม่ล้น ตารางเลื่อนแนวนอนได้</li>
+<li>[ ] ตัดอินเทอร์เน็ตแล้วโหลดหน้าในเครือข่ายท้องถิ่น ไลบรารีต้องยังทำงาน</li>
+<li>[ ] ติดตั้งบนเครื่องปลายทาง เปิดผ่านเครื่องอื่น และตรวจไฟล์ภาพ/ส่งออกจริง</li>
+</ul>
+<h2>โครงนำเสนอ 20 นาที</h2>
+<table>
+<thead>
+<tr>
+<th>นาที</th>
+<th>เรื่อง</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–2</td>
+<td>แนะนำตัวไทยและภาษาต่างประเทศ ปัญหาที่ทีมพบ</td>
+</tr>
+<tr>
+<td>2–5</td>
+<td>Design Thinking: ผู้ใช้ → ปัญหา → แนวคิด → ต้นแบบ → ทดสอบ</td>
+</tr>
+<tr>
+<td>5–7</td>
+<td>BMC: ผู้ใช้ ผู้สนับสนุน คุณค่า ต้นทุน รายได้ที่เป็นไปได้</td>
+</tr>
+<tr>
+<td>7–13</td>
+<td>สมาชิกส่งขยะ เจ้าหน้าที่ตรวจรับ ภาพรวมเปลี่ยน เป้าหมายและคะแนน</td>
+</tr>
+<tr>
+<td>13–16</td>
+<td>สิทธิ์ ระงับบัญชี เนื้อหาตามเวลา รายงาน/CSV</td>
+</tr>
+<tr>
+<td>16–18</td>
+<td>ERD เหตุผลเลือกเทคโนโลยี ข้อจำกัดและแนวทางต่อยอด</td>
+</tr>
+<tr>
+<td>18–20</td>
+<td>สรุปคุณค่าจากข้อมูลทดสอบ และเผื่อคำถามตามรูปแบบที่กรรมการกำหนด</td>
+</tr>
+</tbody>
+</table>
+<h2>โครง Design Thinking สำหรับให้นักเรียนเติมหลักฐาน</h2>
+<ul>
+<li>Empathize: สัมภาษณ์นักเรียน ผู้เก็บขยะ และร้านรับซื้อเรื่องการแยก ชั่ง และติดตามผล</li>
+<li>Define: เลือกปัญหาที่พบจริง เช่น บันทึกกระดาษสูญหายและไม่เห็นผลสะสม</li>
+<li>Ideate: เปรียบเทียบทางเลือก แล้วอธิบายเหตุผลเลือกธนาคารขยะพร้อมการตรวจรับ</li>
+<li>Prototype: วาด 3 หน้าหลัก ส่งขยะ/ตรวจรับ/ภาพรวม ก่อนเขียนโค้ด</li>
+<li>Test: ให้ผู้ใช้ทำภารกิจเดียวกัน จับเวลา จดข้อผิดพลาด ปรับแล้วทดสอบซ้ำ</li>
+</ul>
+<p>อย่าอ้างว่ามีการสัมภาษณ์หรือได้ผลลัพธ์จริงหากยังไม่ได้ทำ ข้อมูลสาธิตในระบบเป็นข้อมูลสมมติ</p>
+<h2>โครง BMC สำหรับอภิปราย</h2>
+<p>ลูกค้า: วิทยาลัย/ชุมชน; ผู้ใช้: นักเรียนและเจ้าหน้าที่
+คุณค่า: ประวัติขยะตรวจสอบได้ เห็นผลสะสม ลดเวลารวมรายงาน
+ช่องทาง: เครือข่ายวิทยาลัยและจุดรับขยะ
+ความสัมพันธ์: เป้าหมายรายเดือน ความรู้และการตอบปัญหา
+รายได้ที่เสนอให้ศึกษา: บริการติดตั้ง/ดูแลระบบ หรือการสนับสนุนกิจกรรม (ยังไม่ใช่รายได้จริง)
+ทรัพยากร: บุคลากร ระบบ เครื่องชั่ง และจุดรับ
+กิจกรรม: รับขยะ ตรวจข้อมูล ประสานร้านรับซื้อ และสรุปผล
+พันธมิตร: ร้านรับซื้อ ชุมชน และหน่วยงานสิ่งแวดล้อม
+ต้นทุน: ดูแลระบบ อุปกรณ์ การจัดเก็บ/ขนส่ง และอบรม</p>
+<h2>แผน 8 ชั่วโมงพัฒนาระบบ</h2>
+<p>ชั่วโมง 1 ฐานข้อมูลและโครงหน้า; 2 Login/สิทธิ์และ types; 3–4 records/users/contents; 5 โปรไฟล์/กู้บัญชี/แจ้งเตือน; 6 รายงาน/กราฟ/ส่งออก; 7 ทดสอบทุกบทบาทและมือถือ; 8 ติดตั้งเครื่องปลายทางและซ้อมสาธิต</p>
+<p>เริ่มทดสอบเครื่องแม่ข่ายตั้งแต่ระบบขั้นต่ำพร้อม ไม่รอชั่วโมงสุดท้าย เอกสารระดับชาติมีเงื่อนไขว่าต้องอัปโหลดและเรียกใช้งานบนเครื่องแม่ข่ายที่จัดให้ได้</p></section><section id="tests"><h1>ผลตรวจรับชุดฝึก Green Digital</h1>
+<p>วันที่ตรวจ: 4 พฤศจิกายน 2569 (Asia/Bangkok)</p>
+<h2>สภาพแวดล้อม</h2>
+<ul>
+<li>PHP 8.5.11 พร้อม PDO, mbstring, fileinfo และ session</li>
+<li>MariaDB 13.0.2 บนเครื่องทดสอบแยก ใช้ schema และ demo SQL จากชุดส่งมอบ</li>
+<li>SQLite ผ่าน PDO สำหรับทดสอบทางเลือก</li>
+<li>ตรวจหน้าจอจริงผ่านเบราว์เซอร์ รวมการจำลองความกว้าง 390 พิกเซล</li>
+</ul>
+<p>ชุดออกแบบให้ใช้กับ PHP 8+ / MySQL หรือ MariaDB ใน XAMPP การทดสอบนี้ไม่ได้ทำบน Windows XAMPP หรือเครื่องแม่ข่ายสนามแข่งขันจริง ต้องติดตั้งและลอง URL ของเครื่องปลายทางก่อนวันแข่ง</p>
+<h2>ผลทดสอบอัตโนมัติ</h2>
+<p>ผ่าน 150 assertions ต่อฐานข้อมูล (รวมการตรวจ HTTP status และผลลัพธ์ทางธุรกิจ) ใช้ Python มาตรฐานส่ง HTTP จริงไปยัง PHP และฐานข้อมูล ไม่จำลองคำตอบ API</p>
+<ul>
+<li>Login/Logout, สมัคร, ตรวจอีเมลซ้ำ และ CSRF</li>
+<li>session และสิทธิ์ admin/staff/member</li>
+<li>CRUD ประเภท/องค์กร/เนื้อหา/บันทึกขยะ และข้อจำกัด Foreign Key</li>
+<li>ตรวจเจ้าของรายการใน list/detail/save/delete/image</li>
+<li>ไม่ยอมรับการปลอม user_id หรือสถานะอนุมัติจากสมาชิก</li>
+<li>น้ำหนัก ราคา วันที่ ช่วงวัน และความละเอียดทศนิยม</li>
+<li>ตรวจรับ → ยอดน้ำหนัก/มูลค่า → เป้าหมาย/คะแนน</li>
+<li>เปลี่ยนราคาประเภทแล้วประวัติเดิมไม่เปลี่ยน</li>
+<li>ภาพจริง อัปโหลดภาพใหม่ คงภาพเดิม ปฏิเสธไฟล์ปลอมและไฟล์เกิน 3 MB</li>
+<li>เนื้อหาซ่อน/อนาคต/หมดอายุและสิทธิ์อ่านรายละเอียด</li>
+<li>รายงานปัญหา แจ้งเตือน และตอบกลับ</li>
+<li>ระงับบัญชีแล้ว session เดิมใช้ต่อไม่ได้</li>
+<li>เปลี่ยนรหัสผ่าน, ยืนยันกู้คืนก่อน reset, รหัสกู้คืนหมุนเวียน และใช้สิทธิ์ซ้ำไม่ได้</li>
+<li>CSV ตรงกับตัวกรองและป้องกันค่าเริ่มต้นสูตร</li>
+<li>จำกัดการลองรหัสผ่านผิดครบ 8 ครั้ง แล้วครั้งถัดไปได้ HTTP 429</li>
+</ul>
+<h2>ผลตรวจหน้าจอ</h2>
+<ul>
+<li>เข้าสู่ระบบผู้ดูแลและแสดงเมนูตามบทบาท</li>
+<li>เพิ่มประเภทผ่าน Modal แล้วตารางปรับโดยไม่เปลี่ยนหน้า</li>
+<li>เปิดแก้ไขแสดงค่าเดิม บันทึกแล้วตารางแสดงราคาใหม่</li>
+<li>บันทึกน้ำหนัก 12.5 กก. เป็น pending แล้วตรวจรับผ่านหน้าจอ</li>
+<li>ภาพรวมแสดง 12.500 กก. และ 50.00 บาท ตามราคากระดาษ 4 บาท/กก.</li>
+<li>ข้อมูลตัวอย่างจาก demo.sql แสดงยอดตรวจรับ 43.700 กก. และ 340.00 บาท</li>
+<li>ที่ความกว้าง 390px หน้า Dashboard มี bodyWidth = clientWidth = 390 ไม่มีหน้าหลักล้นแนวนอน เมนูย่อเปิดได้</li>
+<li>ตรวจ JavaScript syntax และ PHP syntax ผ่านทุกไฟล์</li>
+</ul>
+<p>รูปประกอบ: dashboard.png เป็นหน้าจอจากฐานข้อมูลทดสอบ จึงอาจมีจำนวนสมาชิกมากกว่าฐานข้อมูลตัวอย่างเริ่มต้น</p>
+<h2>ทำซ้ำการทดสอบ</h2>
+<p>ใช้ฐานข้อมูลทดสอบแยกเท่านั้น สคริปต์สร้างบัญชีและรายการเพื่อทดสอบ แล้วลบเฉพาะรายการที่ตัวเองสร้างบางส่วน ไม่ใช้กับฐานข้อมูลจริง สร้างฐานข้อมูลใหม่จาก SQL และ demo.sql ก่อนเริ่มรอบตรวจรับ</p>
+<pre><code class="language-sh">python3 tests/integration.py http://127.0.0.1:8000 --disposable
+</code></pre>
+<p>แยกไดเรกทอรีข้อมูล SQLite ด้วย GD_SQLITE หรือกำหนด GD_DATABASE/GD_PORT สำหรับ MySQL ตาม Config.php</p>
+<h2>ขอบเขตชุดฝึก</h2>
+<p>ชุดนี้ครบสำหรับการฝึกตามแผนและขั้นตอนสาธิตที่แนบ ใช้ตารางฝั่งเบราว์เซอร์เหมาะกับข้อมูลฝึกปริมาณไม่มาก การใช้งานจริงจำนวนมากควรเพิ่ม pagination ฝั่งเซิร์ฟเวอร์ สำรองข้อมูลและติดตามการเปลี่ยนแปลงเพิ่มเติม</p>
+<p>Design Thinking, BMC, หลักฐานผลกระทบจากผู้ใช้จริง และการนำเสนอ ต้องให้นักเรียนจัดทำตามบริบทของทีม ข้อมูลสมมติและซอฟต์แวร์เพียงอย่างเดียวไม่รับรองคะแนนแข่งขัน</p></section><p>Green Digital 1.0 · 4 พฤศจิกายน 2569</p></main></body></html>
